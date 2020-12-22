@@ -1,0 +1,81 @@
+public int update(Game game,long timeDue)
+	{
+		int action = 0;
+
+		//Variable initialization list
+		Defender closestDefender = game.getDefender(0);//Will store the nearest defender
+		int distanceBigPills = -1;
+		Attacker gator = game.getAttacker();
+		List <Defender> closestActor = game.getDefenders();//List of the defenders not a single defender
+
+		// 4th: eat the pills
+		List <Node> smallPills = game.getPillList();
+		action = game.getAttacker().getNextDir(game.getAttacker().getTargetNode(smallPills, true), true);
+
+
+		//3rd: flee away from the non-vulnerable closest defender
+		int[] result = new int[4];//number of defenders
+		//The location of where each of the four defenders are at a certain point in the game
+		for (int i = 0; i < 4; i++)
+		{
+			game.getDefenders();
+			Defender _oneDefender = game.getDefender(i);
+			int store = _oneDefender.getLocation().getPathDistance(game.getAttacker().getLocation());
+			result[i]= store;
+		}
+		int min = 50;
+
+		for(int i = 0; i < result.length; i++)//Will find the closest defender out of all four
+		{
+			if (result[i] < min){
+				min = result[i];
+				closestDefender =game.getDefender(i);
+
+			}
+		}
+
+
+		// 2nd: chase power pills
+		if(game.getPowerPillList().isEmpty()) {//true if empty
+
+			distanceBigPills = -1;
+		}
+		else
+		{
+			distanceBigPills = gator.getTargetNode(game.getPowerPillList(), true).getPathDistance(gator.getLocation());
+		}
+		//if the nearest defender and the attacker's distance is < 10 AND defender is non-vulnerable AND distance between Big pill and attack is < 5
+		if(closestDefender.getLocation().getPathDistance(game.getAttacker().getLocation()) < 10 && !(closestDefender.isVulnerable()) && !(distanceBigPills < 5))
+		{
+			action = game.getAttacker().getNextDir(closestDefender.getLocation(), false);//flee from defender since there isn't a pill
+			//return action;
+		}
+
+
+		//1. eating the vulnerable defenders
+		//if the distance between Power pill and attacker is < 3 and it's a NOT a vulnerable defender then 1st statement gets executed
+		if(distanceBigPills < 3 && distanceBigPills != -1 && !(closestDefender.isVulnerable()))
+		{
+			if(closestDefender.getLocation().getPathDistance(game.getAttacker().getLocation()) > 10 )
+			{
+				action = game.getAttacker().getReverse();//hover around the Big pill under the defender is close
+				//return action;
+			}
+			else
+			{
+				action = game.getAttacker().getNextDir(gator.getTargetNode(game.getPowerPillList(), true), true);
+				//return action;
+			}
+		}
+		if(closestDefender.getLocation().getPathDistance(game.getAttacker().getLocation()) < 22 && closestDefender.isVulnerable())
+		{
+
+			action = gator.getLocation().getPathDistance(game.getAttacker().getTargetActor(game.getDefenders(), true).getLocation());
+
+
+		}
+		else {
+			action = game.getAttacker().getNextDir(game.getAttacker().getTargetNode(smallPills, true), true);
+		}
+
+		return action;
